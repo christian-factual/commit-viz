@@ -2,16 +2,64 @@
 <html ng-app>
 
 <head>
-	<!-- Loading in all the JS files: angular, D3, jQuery-->
-	<script type="text/javascript" src="./js/angular.min.js"></script>
-	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
+	<!-- <link rel="stylesheet" type="text/css" href="./css/bootstrap-theme.min.css"> -->
+	<link rel="stylesheet" type="text/css" href="./css/index.css">
 </head>
 
 <body>
-	<div>
+	<div id="headerContainer">
+		<div id="title"> 
+			<h1>Commit Visualization</h1>
+		</div>
+		<hr>
+		<div style="vertical-align:top">
+			<!-- Will need to use Angular to make this update whenever the or static whenever the commit ID is input tin the input field. 
+			Remove Strong later when adding the rest of the CSS.
+			-->
+			<span><b>%Commit_ID%</b></span>
+			<input type="text" placeholder="Commit_ID" style="float:right">
+		</div>
+	</div>
+	<br>
+	<div id="mainContainer" class="container-fluid">
+		<div id="menuBar" class="row">
+			<div class="btn-group col-md-6 col-md-offset-3" ng-controller="MenuBarCtrl">
+
+				<button type="button" class="btn btn-default" ng-repeat="attrib in mainAttribs">{{attrib}}</button>
+				<!-- think i can use Angular to do this quickly. -->
+				<div class="btn-group">
+					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						More Fields
+						<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu">
+						<li>
+							<div class="dropdown-menu btn-group btn-group-vertical">
+								<button type="button" class="btn btn-default" ng-repeat="attrib in otherAttribs">{{attrib}}</button>
+								<!-- <li ng-repeat="oattrib in otherAttribs"><a href="#">{{oattrib}}</a></li> -->
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div id="topGraph">
+
+		</div>
+
+		<div id="bottomGraph">
+
+		</div>
 
 	</div>
+	<!-- Loading in all the JS files: angular, D3, jQuery-->
+	<script type="text/javascript" src="./js/angular.min.js"></script>
+	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="./js/controllers/invoice1.js"></script>
+	<script type="text/javascript" src="./js/controllers/menubar.js"></script>
 </body>
 
 </html>
