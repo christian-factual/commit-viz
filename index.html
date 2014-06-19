@@ -1,24 +1,23 @@
 <!doctype html>
-<html ng-app>
+<html >
 
 <head>
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
 	<!-- <link rel="stylesheet" type="text/css" href="./css/bootstrap-theme.min.css"> -->
 	<link rel="stylesheet" type="text/css" href="./css/index.css">
+	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 </head>
 
-<body>
+<body ng-app>
 	<div id="headerContainer">
 		<div id="title"> 
 			<h1>Commit Visualization</h1>
 		</div>
 		<hr>
 		<div class="container">
-		<!-- Will need to use Angular to make this update whenever the or static whenever the commit ID is input tin the input field. 
-			Remove Strong later when adding the rest of the CSS.
-		-->
 			<div class="row">
-				<h4 class="col-md-3">%Commit_ID%</h4>
+				<h4 class="col-md-3">%Commit_ID%</h4> <!-- Will need to use Angular to make this update whenever the or static whenever the commit ID is input tin the input field.-->
 				<div class="input-group col-md-5 col-md-offset-7">
 					<input type="text" placeholder="Commit_ID" class="form-control">
 					<span class="input-group-btn">
@@ -32,6 +31,7 @@
 	</div>
 	<br>
 	<div id="mainContainer" class="container-fluid">
+		<h5 style="float:left">Attribute Summarizers</h5>
 		<div id="menuBar" class="row">
 			<div class="btn-group btn-group-justified" ng-controller="MenuBarCtrl">
 				<div class="btn-group" ng-repeat="attrib in mainAttribs">
@@ -54,26 +54,40 @@
 				</div>
 			</div>
 		</div>
-		<div id="YextIndicator" class="row">
-			<div class="col-md-2 col-md-offset-10">
+		<input type="checkbox" ng-model="checked">
+		<div id="YextIndicator" class="row" ng-hide="checked">
+			<div class="col-md-3 col-md-offset-9">
 				<div class="alert alert-info"> Yext Powered Listing</div>
 			</div>
 		</div>
-		<div id="topGraph">
+
+		<div id="topContainer">
+			<div id="topContent">
+
+
+			</div>
 
 		</div>
+		
+		<div id="midContainer">
+			<div id="midContent">
 
-		<div id="bottomGraph">
-
+			</div>
+		</div>
+		<div id="bottomContainer">
+			<div id="bottomContent">
+				<table id="progress" class="table table-bordered table-striped table-condensed">
+					<thead></thead>
+					<tbody></tbody>
+				</table>
+			</div>
 		</div>
 
 	</div>
 	<!-- Loading in all the JS files: angular, D3, jQuery-->
 	<script type="text/javascript" src="./js/angular.min.js"></script>
-	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="./js/controllers/menubar.js"></script>
+	<script type="text/javascript" src="./js/main.js"></script>
 </body>
 
 </html>
