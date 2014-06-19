@@ -42,9 +42,9 @@
 						More Fields
 						<span class="caret"></span>
 					</button>
-					<ul class="dropdown-menu">
+					<ul id="menuBarDropdown" class="dropdown-menu">
 						<li>
-							<div class="dropdown-menu btn-group btn-group-vertical">
+							<div id="menuBarDropdownContainer"class="dropdown-menu btn-group btn-group-vertical">
 								<button type="button" class="btn btn-default" ng-repeat="attrib in otherAttribs">{{attrib}}</button>
 								<!-- <li ng-repeat="oattrib in otherAttribs"><a href="#">{{oattrib}}</a></li> -->
 								<!-- if i want to remove the button and just use hyperlinks ^^^^use line above -->
@@ -53,6 +53,9 @@
 					</ul>
 				</div>
 			</div>
+		</div>
+		<div id="YextIndicator" class="row">
+
 		</div>
 		<div id="topGraph">
 
