@@ -79,8 +79,16 @@
 		<div id="bottomContainer">
 			<div id="bottomContent" ng-controller="TableCtrl">
 				<table id="progress" class="table table-bordered table-striped table-condensed">
-					<thead></thead>
-					<tbody></tbody>
+					<thead>
+						<tr>
+							<th>Attribute</th>
+							<th>Raw Input</th>
+							<th>Cleaned Input</th>
+							<th>Summary</th>
+						</tr>
+					</thead>
+					<tbody id="summaryTable">
+					</tbody>
 				</table>
 			</div>
 		</div>
