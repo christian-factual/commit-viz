@@ -9,7 +9,13 @@ body {
 #YextIndicator{
 	margin-top: 10px;
 	text-align: center;
-	
+}
+
+#commitID{
+	white-space: nowrap;
+	overflow: hidden;              /* "overflow" value must be different from  visible"*/ 
+    -o-text-overflow: ellipsis;    /* Opera < 11*/
+    text-overflow:    ellipsis;   
 }
 
 /*#menuBar{
