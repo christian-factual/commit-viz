@@ -13,16 +13,13 @@ $.getJSON("http://localhost:8888/resources/peets_input_report.json", function(js
 
 var commitVizModule = angular.module('commitViz',[])
 	.value('attArrays', {
-			'main': ['Name', 'Telephone', 'Address', 'Locality', 'Region', 'Geocode'],
-			'other': ['Post Code', 'Country', 'Website', 'Category ID']
-		});
-
-
-function MenuBarCtrl($scope, attArrays){
-	$scope.mainAttribs = attArrays.main;
-	$scope.otherAttribs = attArrays.other;
-
-}
+		'main': ['Name', 'Telephone', 'Address', 'Locality', 'Region', 'Geocode'],
+		'other': ['Post Code', 'Country', 'Website', 'Category ID']
+	})
+	.controller('MenuBarCtrl', function($scope, attArrays){
+		$scope.mainAttribs = attArrays.main;
+		$scope.otherAttribs = attArrays.other;
+	});
 
 function TableCtrl($scope){
 
