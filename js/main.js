@@ -8,11 +8,24 @@ $.getJSON("http://localhost:8888/resources/peets_input_report.json", function(js
     // console.log(json); // this will show the info it in firebug console
     commitReport = json;
 });
+var other = {};
 
 var commitVizModule = angular.module('commitViz',[])
 	.value('attArrays', {
 		'main': ['Name', 'Telephone', 'Address', 'Locality', 'Region', 'Geocode'],
 		'other': ['Post Code', 'Country', 'Website', 'Category ID']
+	})
+	.filter('splitCap', function(){
+		return function(input){
+			input = input || '';
+			var out = "";
+			var temp = input.split("_");
+			for(var index = 0; index<temp.length; index++){
+				var other = temp[index].charAt(0).toUpperCase() + temp[index].slice(1) + " ";
+				out = out + other;
+			}
+			return out;
+		};
 	})
 	.service('dsApiService', function(inputReportCleaner, $http, $q){
 		//This is where I'm making the JSON call to DSAPIs
@@ -79,22 +92,23 @@ var commitVizModule = angular.module('commitViz',[])
 					info[key] = [finalSummary[key]];
 				}
 			}
+			console.log(info);
 			for(var key in info){
 				//case that both have this field
 				if(clean.hasOwnProperty(key) && raw.hasOwnProperty(key)){
-					info[key].upshift(raw[key], clean[key]);
+					info[key].unshift(raw[key], clean[key]);
 					continue;
 				}
 				else if(clean.hasOwnProperty(key)){
-					info[key].upshift(' ', clean[key]);
+					info[key].unshift(' ', clean[key]);
 					continue;
 				}
 				else if(raw.hasOwnProperty(key)){
-					info[key].upshift(raw[key], ' ');
+					info[key].unshift(raw[key], ' ');
 					continue;
 				}
 				else{
-					info[key].upshift(' ', ' ');
+					info[key].unshift(' ', ' ');
 				}				
 			}
 			console.log(info);
@@ -116,10 +130,13 @@ var commitVizModule = angular.module('commitViz',[])
 		$scope.otherAttribs = attArrays.other;
 	})
 	.controller('TableCtrl', function($scope, inputReportCleaner){
-		$scope.rawFields = inputReportCleaner.generateTableInfo();
-
+		$scope.tableInfo = {};
 		$scope.seeTableInfo = function(){
-			console.log($scope.rawFields);
+			var temp = inputReportCleaner.generateTableInfo();
+			console.log(temp);
+			$scope.tableInfo = temp;
+			other = temp;
+			
 		}
 		
 	});

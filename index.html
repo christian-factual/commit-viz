@@ -93,8 +93,12 @@
 						</tr>
 					</thead>
 					<tbody id="summaryTable">
-
-
+						<tr ng-repeat="(key, value) in tableInfo">
+							<td>{{key|splitCap}}</td>
+							<td>{{value[0]}}</td>
+							<td>{{value[1]}}</td>
+							<td>{{value[2]}}</td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
