@@ -123,20 +123,33 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			console.log(info);
 			return info;
 		}
+
+		this.generateChartInfo = function(type){
+
+		}
 	})
-	.controller('pageCtrl', function($scope, dsApiService){
+	.controller('pageCtrl', function($scope, attArrays, dsApiService){
+		//vars
 		$scope.inputID = '';
 		$scope.tableInfo = {};
+		//Info for the menu bar
+		$scope.mainAttribs = attArrays.main;
+		$scope.otherAttribs = attArrays.other;
+		//function needed to get the JSON file from the server
 		$scope.getJSON = function(){
 			//dsApiService.callDSApi($scope.inputID);
 			dsApiService.callDSApi(function(error, tableJson){
 			//set table info
 			$scope.tableInfo = tableJson;
+			//set chart info
+			// $scope.data
 			});
 		};
-		
+
+		//details for the angular charts instatiation
+		//scope.data information that is set.
 		$scope.data = {
-			series: ['Sales', 'Income', 'Expense'],
+			// series: ['Sales', 'Income', 'Expense'],
 			data : [{
 				x : "Jack",
 				y: [100,210, 384],
@@ -155,14 +168,13 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 				y: [54, 341, 879]
 			}]     
 		}
-
-		$scope.chartType = 'pie';
+		//config of the chrart details
 		$scope.config = {
 			labels: false,
-			title : "Products",
+			title : "Not Procuts",
 			legend : {
 				display: true,
-				position:'right'
+				position:'left'
 			},
 			click : function(d) {
 				console.log('clicked!');
@@ -176,10 +188,6 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			innerRadius: 0,
 			lineLegend: 'lineEnd',
 		}
-	})
-	.controller('MenuBarCtrl', function($scope, attArrays){
-		$scope.mainAttribs = attArrays.main;
-		$scope.otherAttribs = attArrays.other;
 	});
 
 
