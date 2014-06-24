@@ -1,5 +1,5 @@
 <!doctype html>
-<html >
+<html>
 
 <head>
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
@@ -9,14 +9,14 @@
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 </head>
 
-<body ng-app="commitViz">
+<body ng-app="commitViz"  ng-controller="pageCtrl">
 	<div id="headerContainer">
 		<div id="title"> 
 			<h1>Commit Visualization</h1>
 		</div>
 		<hr>
 		<div class="container">
-			<div class="row" ng-controller="pageCtrl">
+			<div class="row">
 				<h4 id="commitID"class="col-md-5">
 					H4sIAAAAAAAAAA3HyxECQQgA0Yim-AwwEIIBGABgjV50D-7B8N0-vKoGdIPzd3u-7xDo9JA9R7fzEKw5siKHLHZvUzZEIHBE6ZYy5nBfnFWJ6lHlvnk1fI7xOr4n4BUBCbJRsMklrGm0qVQ1S7OtQ68Lw8UihvMP-2NSlJAAAAA
 				</h4> 
@@ -69,8 +69,9 @@
 
 		<div id="topContainer">
 			<div id="topContent">
-
-
+				<div id="chart">
+					<div ac-chart="chartType" ac-data="data" ac-config="config" id='chart' class='chart'></div>
+				</div>
 			</div>
 
 		</div>
@@ -81,15 +82,15 @@
 			</div>
 		</div>
 		<div id="bottomContainer">
-			<div id="bottomContent" ng-controller="TableCtrl">
-				<button ng-click="seeTableInfo()">Push</button>
+			<div id="bottomContent" >
+				<h5>Attribute Progression</h5>
 				<table id="progress" class="table table-bordered table-striped table-condensed">
 					<thead>
 						<tr>
-							<th>Attribute</th>
-							<th>Raw Input</th>
-							<th>Cleaned Input</th>
-							<th>Summary</th>
+							<th class="col-md-3">Attribute</th>
+							<th class="col-md-3">Raw Input</th>
+							<th class="col-md-3">Cleaned Input</th>
+							<th class="col-md-3">Summary</th>
 						</tr>
 					</thead>
 					<tbody id="summaryTable">
@@ -107,6 +108,7 @@
 	</div>
 	<!-- Loading in all the JS files: angular, D3, jQuery-->
 	<script type="text/javascript" src="./js/angular.min.js"></script>
+	<script type="text/javascript" src="./js/angular-charts.min.js"></script>
 	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="./js/main.js"></script>
 </body>

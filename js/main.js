@@ -1,16 +1,16 @@
 //Making a static list of all the attributes
 
 var commitID = "H4sIAAAAAAAAAA3HyxECQQgA0Yim-AwwEIIBGABgjV50D-7B8N0-vKoGdIPzd3u-7xDo9JA9R7fzEKw5siKHLHZvUzZEIHBE6ZYy5nBfnFWJ6lHlvnk1fI7xOr4n4BUBCbJRsMklrGm0qVQ1S7OtQ68Lw8UihvMP-2NSlJAAAAA";
-//Get the JSON file from the server
-var commitReport;
-//currently this is wrong, must do in angular.
-$.getJSON("http://localhost:8888/resources/peets_input_report.json", function(json) {
-    // console.log(json); // this will show the info it in firebug console
-    commitReport = json;
-});
-var other = {};
+// //Get the JSON file from the server
+// var commitReport;
+// //currently this is wrong, must do in angular.
+// $.getJSON("http://localhost:8888/resources/peets_input_report.json", function(json) {
+//     // console.log(json); // this will show the info it in firebug console
+//     commitReport = json;
+// });
+// var other = {};
 
-var commitVizModule = angular.module('commitViz',[])
+var commitVizModule = angular.module('commitViz',['angularCharts'])
 	.value('attArrays', {
 		'main': ['Name', 'Telephone', 'Address', 'Locality', 'Region', 'Geocode'],
 		'other': ['Post Code', 'Country', 'Website', 'Category ID']
@@ -27,7 +27,7 @@ var commitVizModule = angular.module('commitViz',[])
 			return out;
 		};
 	})
-	.service('dsApiService', function(inputReportCleaner, $http, $q){
+	.service('dsApiService', function(inputReportCleaner, $http){
 		//This is where I'm making the JSON call to DSAPIs
 		var baseURL = 'http://localhost:8888/resources/';
 		var _commitID= 'peets_input_report.json'; //****This will be an input later
@@ -51,19 +51,21 @@ var commitVizModule = angular.module('commitViz',[])
 		}
 		/** Function to make http call to the the server.
 		**/
-		this.callDSApi = function(){
+		this.callDSApi = function(callback){
 			makeURL();
 			$http({
 				method: 'GET',
 				url: _finalURL
 			})
 			.success(function(data, status){
-				console.log("This worked! Here's the JSON: ");
+				console.log("This worked!");
 				inputReportCleaner.storeJSON(data);
+				callback(status, inputReportCleaner.generateTableInfo())
 			})
 			.error(function(data, status){
 				console.log("This crap didnt work");
 				alert("Wasn't able to find this commit ID");
+				// callback(status, null);
 			})	
 		}
 	})
@@ -74,6 +76,7 @@ var commitVizModule = angular.module('commitViz',[])
 		this.storeJSON = function(data){
 			inputReport = data; 
 			console.log("here!",inputReport);
+			// generateTableInfo();
 		}
 
 		this.getInputReport = function(){
@@ -94,6 +97,12 @@ var commitVizModule = angular.module('commitViz',[])
 			}
 			console.log(info);
 			for(var key in info){
+				//special case that we have a rawaddress
+				if(key==='address'){
+					console.log('inside the address');
+					info[key].unshift(raw[key], clean['rawaddress']);
+					continue;
+				}
 				//case that both have this field
 				if(clean.hasOwnProperty(key) && raw.hasOwnProperty(key)){
 					info[key].unshift(raw[key], clean[key]);
@@ -116,30 +125,63 @@ var commitVizModule = angular.module('commitViz',[])
 		}
 	})
 	.controller('pageCtrl', function($scope, dsApiService){
-		$scope.data = {};
 		$scope.inputID = '';
-
+		$scope.tableInfo = {};
 		$scope.getJSON = function(){
 			//dsApiService.callDSApi($scope.inputID);
-			dsApiService.callDSApi();
+			dsApiService.callDSApi(function(error, tableJson){
+			//set table info
+			$scope.tableInfo = tableJson;
+			});
 		};
+		
+		$scope.data = {
+			series: ['Sales', 'Income', 'Expense'],
+			data : [{
+				x : "Jack",
+				y: [100,210, 384],
+				tooltip:"this is tooltip"
+			},
+			{
+				x : "John",
+				y: [300, 289, 456]
+			},
+			{
+				x : "Stacy",
+				y: [351, 170, 255]
+			},
+			{
+				x : "Luke",
+				y: [54, 341, 879]
+			}]     
+		}
 
+		$scope.chartType = 'pie';
+		$scope.config = {
+			labels: false,
+			title : "Products",
+			legend : {
+				display: true,
+				position:'right'
+			},
+			click : function(d) {
+				console.log('clicked!');
+			},
+			mouseover : function(d) {
+				console.log('mouseover!');
+			},
+			mouseout : function(d) {
+				console.log('mouseout!');
+			},
+			innerRadius: 0,
+			lineLegend: 'lineEnd',
+		}
 	})
 	.controller('MenuBarCtrl', function($scope, attArrays){
 		$scope.mainAttribs = attArrays.main;
 		$scope.otherAttribs = attArrays.other;
-	})
-	.controller('TableCtrl', function($scope, inputReportCleaner){
-		$scope.tableInfo = {};
-		$scope.seeTableInfo = function(){
-			var temp = inputReportCleaner.generateTableInfo();
-			console.log(temp);
-			$scope.tableInfo = temp;
-			other = temp;
-			
-		}
-		
 	});
+
 
 
 
