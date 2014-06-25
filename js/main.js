@@ -8,12 +8,12 @@ var commitID = "H4sIAAAAAAAAAA3HyxECQQgA0Yim-AwwEIIBGABgjV50D-7B8N0-vKoGdIPzd3u-
 //     // console.log(json); // this will show the info it in firebug console
 //     commitReport = json;
 // });
-// var other = {};
+var other = {};
 
 var commitVizModule = angular.module('commitViz',['angularCharts'])
 	.value('attArrays', {
-		'main': ['Name', 'Telephone', 'Address', 'Locality', 'Region', 'Geocode'],
-		'other': ['Post Code', 'Country', 'Website', 'Category ID']
+		'main': ['Name', 'Tel', 'Address', 'Locality', 'Region', 'Geocode'],
+		'other': ['Postcode', 'Country', 'Website'] //, 'Category ID'
 	})
 	.filter('splitCap', function(){
 		return function(input){
@@ -60,7 +60,8 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			.success(function(data, status){
 				console.log("This worked!");
 				inputReportCleaner.storeJSON(data);
-				callback(status, inputReportCleaner.generateTableInfo())
+				// callback(status, inputReportCleaner.generateTableInfo())
+				callback(status, data);
 			})
 			.error(function(data, status){
 				console.log("This crap didnt work");
@@ -76,13 +77,14 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		this.storeJSON = function(data){
 			inputReport = data; 
 			console.log("here!",inputReport);
-			// generateTableInfo();
 		}
 
 		this.getInputReport = function(){
 			return inputReport;
 		}
 
+		//Method uses the stored commit JSON and formats 
+		//it so that the Angular driven table can be generated. 
 		this.generateTableInfo = function(){
 			//Create object
 			var info = {};
@@ -120,70 +122,94 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 					info[key].unshift(' ', ' ');
 				}				
 			}
-			console.log(info);
 			return info;
 		}
-
+		//Method generates pie chart formatted JSON from the stored
+		// http call JSON. Method takes in str 'type' and returns a formatted 
+		//JSON object for Angular-charts
 		this.generateChartInfo = function(type){
+			var pInfo = {};
+			var bInfo = {};
+			var attrib = type.toLowerCase();
 
+			//this is the summary object; key= name, value=weight
+			var summaryStats = inputReport.summary_report.field_summarizer_stats[attrib];
+			//data is an array of objects
+			var dataArr = [];
+
+			for(var key in summaryStats){
+				var temp = {
+					x: key, 
+					y: [summaryStats[key]]
+				}
+				console.log("Ths is temp: ", temp);
+				dataArr.push(temp);
+			}
+			pInfo = {
+				series: [],
+				data: dataArr
+			}
+			return pInfo;
 		}
 	})
-	.controller('pageCtrl', function($scope, attArrays, dsApiService){
+	.controller('pageCtrl', function($scope, attArrays, dsApiService, inputReportCleaner){
 		//vars
 		$scope.inputID = '';
 		$scope.tableInfo = {};
 		//Info for the menu bar
 		$scope.mainAttribs = attArrays.main;
 		$scope.otherAttribs = attArrays.other;
+		//Logic for choosing active tabs
+		$scope.activeTab = 'Name';
+		$scope.selectAttrib = function(event){
+			//onclick set the active 
+			$scope.activeTab = event.target.attributes[2].nodeValue
+			console.log("This is the active: ", $scope.activeTab)
+			try{
+				$scope.data = inputReportCleaner.generateChartInfo($scope.activeTab);
+			}
+			catch(err){
+				//probably happening because the info used in the method has not been populated
+				console.log(err);
+			}
+		};
+
 		//function needed to get the JSON file from the server
 		$scope.getJSON = function(){
 			//dsApiService.callDSApi($scope.inputID);
-			dsApiService.callDSApi(function(error, tableJson){
+			dsApiService.callDSApi(function(error, returnJSON){
 			//set table info
-			$scope.tableInfo = tableJson;
+			other = returnJSON;
+			$scope.tableInfo = inputReportCleaner.generateTableInfo();
 			//set chart info
-			// $scope.data
+			$scope.data = inputReportCleaner.generateChartInfo($scope.activeTab);
 			});
 		};
 
 		//details for the angular charts instatiation
+		//type of chart
+		$scope.chartType = 'pie';
 		//scope.data information that is set.
-		$scope.data = {
-			// series: ['Sales', 'Income', 'Expense'],
-			data : [{
-				x : "Jack",
-				y: [100,210, 384],
-				tooltip:"this is tooltip"
-			},
-			{
-				x : "John",
-				y: [300, 289, 456]
-			},
-			{
-				x : "Stacy",
-				y: [351, 170, 255]
-			},
-			{
-				x : "Luke",
-				y: [54, 341, 879]
-			}]     
-		}
+		$scope.data = {}; //Data for the pie
+		$scope.data2 = {}; //data for the bar
+
+		console.log($scope.data);
 		//config of the chrart details
 		$scope.config = {
 			labels: false,
-			title : "Not Procuts",
+			title : "",
 			legend : {
 				display: true,
 				position:'left'
 			},
 			click : function(d) {
-				console.log('clicked!');
+				// console.log('clicked!');
 			},
 			mouseover : function(d) {
-				console.log('mouseover!');
+				// console.log('mouseover!');
 			},
 			mouseout : function(d) {
-				console.log('mouseout!');
+				// console.log('mouseout!');
 			},
 			innerRadius: 0,
 			lineLegend: 'lineEnd',
