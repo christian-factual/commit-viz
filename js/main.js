@@ -146,7 +146,7 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 				dataArr.push(temp);
 			}
 			pInfo = {
-				series: [],
+				// series: ['thing', 'thing2', 'thing3'],
 				data: dataArr
 			}
 			return pInfo;
@@ -211,7 +211,7 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			mouseout : function(d) {
 				// console.log('mouseout!');
 			},
-			innerRadius: 0,
+			innerRadius: 165,
 			lineLegend: 'lineEnd',
 		}
 	});

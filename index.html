@@ -71,7 +71,7 @@
 				<label>Chart Types</label>
 				<select ng-model='chartType'>
 					<option value="pie">Pie</option>
-					<option value="bar">Bar</option>
+					<option value="sBar">Bar</option>
 				</select>
 			</div>
 				<label>Commit Attribute Weights: {{activeTab}}</label>
@@ -79,7 +79,7 @@
 					<!-- First chart Pie-->
 					<div ac-chart="chartType" ac-data="data" ac-config="config" id='chart' class='chart' ng-show="chartType==='pie'"></div>
 					<!-- This is the second chart -->
-					<div ac-chart="chartType" ac-data="data" ac-config="config" id='chart' class='chart' ng-show="chartType==='bar'"></div>
+					<div ac-chart="chartType" ac-data="data" ac-config="config" id='chart' class='chart' ng-show="chartType==='sBar'"></div>
 				</div>
 			</div>
 		</div>
@@ -117,7 +117,8 @@
 	</div>
 	<!-- Loading in all the JS files: angular, D3, jQuery-->
 	<script type="text/javascript" src="./js/angular.min.js"></script>
-	<script type="text/javascript" src="./js/angular-charts.min.js"></script>
+	<script type="text/javascript" src="./js/custom-charts.js"></script>
+	<!-- // <script type="text/javascript" src="./js/angular-charts.js"></script> -->
 	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="./js/main.js"></script>
 </body>
