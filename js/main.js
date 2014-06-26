@@ -60,29 +60,25 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			.success(function(data, status){
 				console.log("This worked!");
 				inputReportCleaner.storeJSON(data);
-				// callback(status, inputReportCleaner.generateTableInfo())
 				callback(status, data);
 			})
 			.error(function(data, status){
 				console.log("This crap didnt work");
 				alert("Wasn't able to find this commit ID");
-				// callback(status, null);
 			})	
 		}
 	})
 	.service('inputReportCleaner', function(){
+		//vars used.
 		var inputReport = {};
 		var chartInfo = {};
 
+		//Method takes in a data instance, which is the JSON returned from the http
+		//call and assigns it to the inputReport variable of this service.
 		this.storeJSON = function(data){
 			inputReport = data; 
 			console.log("here!",inputReport);
 		}
-
-		this.getInputReport = function(){
-			return inputReport;
-		}
-
 		//Method uses the stored commit JSON and formats 
 		//it so that the Angular driven table can be generated. 
 		this.generateTableInfo = function(){
@@ -125,7 +121,7 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			return info;
 		}
 		//Method generates pie chart formatted JSON from the stored
-		// http call JSON. Method takes in str 'type' and returns a formatted 
+		//http call JSON. Method takes in str 'type' and returns a formatted 
 		//JSON object for Angular-charts
 		this.generateChartInfo = function(type){
 			var pInfo = {};
@@ -151,22 +147,84 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			}
 			return pInfo;
 		}
+
+		//Method takes in a type var, which is the attribute that is 
+		//being displayed. It gets information from the JSON and then
+		//gathers the info needed for the midpane. It also formats it into 
+		//an object with 'userInput', 'explain', highestW', 'totalW' & 'confidence'
+		//as the keys.
+		this.generateContentText = function(type){
+			var attrib = type.toLowerCase();
+			var text = {
+				userInput: '',
+				explain: '',
+				highestW: 0,
+				totalW: 0,
+				confidence: 0
+			};
+
+			var stats = inputReport.latest_summary.fieldMetas[attrib];
+			console.log("These are the stats: ", stats);
+			text['totalW'] = stats.scores['total_weight'];
+			text['highestW'] = stats.scores['highest_weight'];
+			text['confidence'] = stats['confidence'];
+			//get user input if its there
+			console.log('Attempt at userInput ', inputReport.input.payloadRaw);
+			if(inputReport.input.payloadRaw[attrib] !== undefined){
+				text['userInput'] = inputReport.input.payloadRaw[attrib];
+			}
+			
+			//try and get explanation if its there.
+			
+			var temp = inputReport.summary_report.input_contributions_explained
+			for(var key in temp){
+				//since I dont know the key, iterate.
+				for(var entry in temp[key]){//check if this field has an explination
+					if(attrib == entry){
+						console.log('found the entry')
+						text['explain'] = temp[key][entry];
+					}
+				}
+			}
+			return text;
+		}
 	})
 	.controller('pageCtrl', function($scope, attArrays, dsApiService, inputReportCleaner){
+		//random
+		$scope.myData = [
+			{name: 'AngularJS', count: 300},
+			{name: 'D3.JS', count: 150},
+			{name: 'jQuery', count: 400},
+			{name: 'Backbone.js', count: 300},
+			{name: 'Ember.js', count: 100}
+		];
+
 		//vars
 		$scope.inputID = '';
 		$scope.tableInfo = {};
+		//info for the content pane
+		$scope.explain = '';
+		$scope.userInput = '';
+		$scope.highestW = '';
+		$scope.totalW = '';
+		$scope.confidence = '';
 		//Info for the menu bar
 		$scope.mainAttribs = attArrays.main;
 		$scope.otherAttribs = attArrays.other;
 		//Logic for choosing active tabs
 		$scope.activeTab = 'Name';
+
+		//Method is called when the attribute toggle on the html page
+		//is clicked. This updates the page to the attribute and calls 
+		//methods to reset and assign the view for the correct attribute.
+		//This method is also called when the page is first loaded.
 		$scope.selectAttrib = function(event){
 			//onclick set the active 
 			$scope.activeTab = event.target.attributes[2].nodeValue
 			console.log("This is the active: ", $scope.activeTab)
 			try{
 				$scope.data = inputReportCleaner.generateChartInfo($scope.activeTab);
+				$scope.assignContentText(inputReportCleaner.generateContentText($scope.activeTab));
 			}
 			catch(err){
 				//probably happening because the info used in the method has not been populated
@@ -174,7 +232,22 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			}
 		};
 
+		//Method assigns the content pane's text. Gets information from
+		//JSON object as assigns it to each scope.variable
+		$scope.assignContentText = function(arr){
+			console.log("in assign content text");
+			console.log(arr);
+			console.log("This is explain: ", arr['explain']);
+
+			$scope.explain = arr['explain'];
+			$scope.userInput = arr['userInput'];
+			$scope.highestW = arr['highestW'];
+			$scope.totalW = arr['totalW'];
+			$scope.confidence = arr['confidence'];
+		}
+
 		//function needed to get the JSON file from the server
+		//Also calls methods to set variables used in html
 		$scope.getJSON = function(){
 			//dsApiService.callDSApi($scope.inputID);
 			dsApiService.callDSApi(function(error, returnJSON){
@@ -183,6 +256,8 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			$scope.tableInfo = inputReportCleaner.generateTableInfo();
 			//set chart info
 			$scope.data = inputReportCleaner.generateChartInfo($scope.activeTab);
+			//set content
+			$scope.assignContentText(inputReportCleaner.generateContentText($scope.activeTab));
 			});
 		};
 
@@ -216,9 +291,123 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		}
 	});
 
+commitVizModule.directive('timelineD3', [
+	function () {
+		return {
+			restrict: 'E', 
+			scope: {
+				data: '='
+			},
+			link: function(scope, element){
+				d3.select("body")
+					.append("p")
+					.text("New paragraph!");
+				// //Set margins, width, and height
+				// var margin = {top: 20, right: 20, bottom: 30, left: 40},
+				// width = 480 - margin.left - margin.right,
+				// height = 360 - margin.top - margin.bottom;
 
+    //     		//Create the d3 element and position it based on margins
+    //    			var svg = d3.select(element[0])
+    //     			.append("svg")
+    //     			.attr('width', width + margin.left + margin.right)
+    //     			.attr('height', height + margin.top + margin.bottom)
+    //     			.append("g")
+    //     			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+    //     		//Watch 'data' and run scope.render(newVal) whenever it changes
+    //     		//Use true for 'objectEquality' property so comparisons are done on equality and not reference
+    //     		scope.$watch('data', function(){
+    //     			scope.render(scope.data);
+    //     		}, true);  
+			}
+		};
+	}
+]);
 
+//random graph example. This is just to show the formatting of the code 
+commitVizModule.directive('otherthing', [
+	function () {
+		return {
+			restrict: 'E', 
+			scope: {
+				data: '='
+			},
+			link: function(scope, element){
+				//Set margins, width, and height
+				var margin = {top: 20, right: 20, bottom: 30, left: 40},
+				width = 480 - margin.left - margin.right,
+				height = 360 - margin.top - margin.bottom;
 
+        		//Create the d3 element and position it based on margins
+       			var svg = d3.select(element[0])
+        			.append("svg")
+        			.attr('width', width + margin.left + margin.right)
+        			.attr('height', height + margin.top + margin.bottom)
+        			.append("g")
+        			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+        		//Create the scales we need for the graph
+        		var x = d3.scale.ordinal().rangeRoundBands([0, width], .1);
+        		var y = d3.scale.linear().range([height, 0]);
 
+        		//Create the axes we need for the graph
+       		 	var xAxis = d3.svg.axis()
+        			.scale(x)
+        			.orient("bottom");
 
+        		var yAxis = d3.svg.axis()
+        			.scale(y)
+       				.orient("left")
+        			.ticks(10);
+        		//Render graph based on 'data'
+        		scope.render = function(data) {
+        			//Set our scale's domains
+        			x.domain(data.map(function(d) { return d.name; }));
+        			y.domain([0, d3.max(data, function(d) { return d.count; })]);
+        		  	//Remove the axes so we can draw updated ones
+  					svg.selectAll('g.axis').remove();
+  
+  					//Render X axis
+ 					 svg.append("g")
+     					.attr("class", "x axis")
+      					.attr("transform", "translate(0," + height + ")")
+     					.call(xAxis);
+      
+  					//Render Y axis
+  					svg.append("g")
+					    .attr("class", "y axis")
+					    .call(yAxis)
+					  .append("text")
+					    .attr("transform", "rotate(-90)")
+					    .attr("y", 6)
+					    .attr("dy", ".71em")
+					    .style("text-anchor", "end")
+					    .text("Count");
+
+					//Create or update the bar data
+					var bars = svg.selectAll(".bar").data(data);
+					bars.enter()
+						.append("rect")
+						.attr("class", "bar")
+						.attr("x", function(d) { return x(d.name); })
+						.attr("width", x.rangeBand());
+
+					//Animate bars
+					bars
+						.transition()
+						.duration(1000)
+						.attr('height', function(d) { return height - y(d.count); })
+						.attr("y", function(d) { return y(d.count); })
+
+        		}
+        
+        		//Watch 'data' and run scope.render(newVal) whenever it changes
+        		//Use true for 'objectEquality' property so comparisons are done on equality and not reference
+        		scope.$watch('data', function(){
+        			scope.render(scope.data);
+        		}, true);  
+			}
+		};
+	}
+]);

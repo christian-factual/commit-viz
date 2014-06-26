@@ -85,10 +85,15 @@
 		</div>
 		<br>
 		<div id="midContainer">
-			<div id="midContent" class="jumbotron">
-				<p>Words</p>
-
+			<div id="midContent" style="padding:20px;">
+				<p>User Input: <b>{{userInput}}</b></p>
+				<p>Explanation: <b>{{explain}}</b></p>
+				<br>
+				<p>Largest Weight: <b>{{highestW}}</b></p>
+				<p>Total Weight: <b>{{totalW}}</b></p>
+				<p>Confidence: <b>{{confidence}}</b></p>
 			</div>
+			<timeline-D3 data='myData'></timeline-D3>
 		</div>
 		<div id="bottomContainer">
 			<div id="bottomContent" >
@@ -117,8 +122,8 @@
 	</div>
 	<!-- Loading in all the JS files: angular, D3, jQuery-->
 	<script type="text/javascript" src="./js/angular.min.js"></script>
-	<script type="text/javascript" src="./js/custom-charts.js"></script>
-	<!-- // <script type="text/javascript" src="./js/angular-charts.js"></script> -->
+	<!-- // <script type="text/javascript" src="./js/custom-charts.js"></script> -->
+	<script type="text/javascript" src="./js/angular-charts.js"></script>
 	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="./js/main.js"></script>
 </body>
