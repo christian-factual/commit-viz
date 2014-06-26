@@ -77,7 +77,6 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		//call and assigns it to the inputReport variable of this service.
 		this.storeJSON = function(data){
 			inputReport = data; 
-			console.log("here!",inputReport);
 		}
 		//Method uses the stored commit JSON and formats 
 		//it so that the Angular driven table can be generated. 
@@ -93,11 +92,9 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 					info[key] = [finalSummary[key]];
 				}
 			}
-			console.log(info);
 			for(var key in info){
 				//special case that we have a rawaddress
 				if(key==='address'){
-					console.log('inside the address');
 					info[key].unshift(raw[key], clean['rawaddress']);
 					continue;
 				}
@@ -138,7 +135,6 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 					x: key, 
 					y: [summaryStats[key]]
 				}
-				console.log("Ths is temp: ", temp);
 				dataArr.push(temp);
 			}
 			pInfo = {
@@ -164,12 +160,10 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			};
 
 			var stats = inputReport.latest_summary.fieldMetas[attrib];
-			console.log("These are the stats: ", stats);
 			text['totalW'] = stats.scores['total_weight'];
 			text['highestW'] = stats.scores['highest_weight'];
 			text['confidence'] = stats['confidence'];
 			//get user input if its there
-			console.log('Attempt at userInput ', inputReport.input.payloadRaw);
 			if(inputReport.input.payloadRaw[attrib] !== undefined){
 				text['userInput'] = inputReport.input.payloadRaw[attrib];
 			}
@@ -181,7 +175,6 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 				//since I dont know the key, iterate.
 				for(var entry in temp[key]){//check if this field has an explination
 					if(attrib == entry){
-						console.log('found the entry')
 						text['explain'] = temp[key][entry];
 					}
 				}
@@ -221,24 +214,18 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		$scope.selectAttrib = function(event){
 			//onclick set the active 
 			$scope.activeTab = event.target.attributes[2].nodeValue
-			console.log("This is the active: ", $scope.activeTab)
 			try{
 				$scope.data = inputReportCleaner.generateChartInfo($scope.activeTab);
 				$scope.assignContentText(inputReportCleaner.generateContentText($scope.activeTab));
 			}
 			catch(err){
 				//probably happening because the info used in the method has not been populated
-				console.log(err);
 			}
 		};
 
 		//Method assigns the content pane's text. Gets information from
 		//JSON object as assigns it to each scope.variable
 		$scope.assignContentText = function(arr){
-			console.log("in assign content text");
-			console.log(arr);
-			console.log("This is explain: ", arr['explain']);
-
 			$scope.explain = arr['explain'];
 			$scope.userInput = arr['userInput'];
 			$scope.highestW = arr['highestW'];
@@ -268,7 +255,6 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		$scope.data = {}; //Data for the pie
 		$scope.data2 = {}; //data for the bar
 
-		console.log($scope.data);
 		//config of the chrart details
 		$scope.config = {
 			labels: false,
@@ -278,13 +264,13 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 				position:'left'
 			},
 			click : function(d) {
-				// console.log('clicked!');
+			
 			},
 			mouseover : function(d) {
-				// console.log('mouseover!');
+				
 			},
 			mouseout : function(d) {
-				// console.log('mouseout!');
+				
 			},
 			innerRadius: 165,
 			lineLegend: 'lineEnd',
@@ -299,7 +285,11 @@ commitVizModule.directive('timelineD3', [
 				data: '='
 			},
 			link: function(scope, element){
-				d3.select("body")
+				var dataset = [5,10,15,20,25];
+
+				d3.select("body").selectAll("p")
+					.data(dataset)
+					.enter()
 					.append("p")
 					.text("New paragraph!");
 				// //Set margins, width, and height
