@@ -37,12 +37,19 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		**/
 		var makeURL= function(){
 			_finalURL = baseURL + _commitID;
+			console.log("Looking at this URL: ", _finalURL);
 			return _finalURL;
 		}
 		/** Setter for the commit ID variable
 		**/
 		this.setCommitID = function(ID){
-			_commitID = ID;
+			console.log('hit');
+			if(ID == ''){
+				_commitID= 'peets_input_report.json';
+			}
+			else{
+				_commitID = ID;
+			}
 		}
 		/** Getter for the commit ID variable
 		**/
@@ -51,7 +58,8 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		}
 		/** Function to make http call to the the server.
 		**/
-		this.callDSApi = function(callback){
+		this.callDSApi = function(url, callback){
+			this.setCommitID(url);
 			makeURL();
 			$http({
 				method: 'GET',
@@ -237,7 +245,7 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		//Also calls methods to set variables used in html
 		$scope.getJSON = function(){
 			//dsApiService.callDSApi($scope.inputID);
-			dsApiService.callDSApi(function(error, returnJSON){
+			dsApiService.callDSApi($scope.inputID, function(error, returnJSON){
 			//set table info
 			other = returnJSON;
 			$scope.tableInfo = inputReportCleaner.generateTableInfo();
@@ -285,13 +293,72 @@ commitVizModule.directive('timelineD3', [
 				data: '='
 			},
 			link: function(scope, element){
-				var dataset = [5,10,15,20,25];
+				var w = 500;
+				var h = 300;
+				var padding = 20;
 
-				d3.select("body").selectAll("p")
-					.data(dataset)
-					.enter()
-					.append("p")
-					.text("New paragraph!");
+				var dataset = [
+				[600, 150], [5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+				[410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+				];
+
+				var xScale = d3.scale.linear()
+								.domain([0, d3.max(dataset, function(d) { return d[0]; })])
+								.range([padding, w - padding* 2]);
+				var yScale = d3.scale.linear()
+								.domain([0, d3.max(dataset, function(d) { return d[1]; })])
+								.range([h - padding , padding]);
+
+				var rScale = d3.scale.linear()
+									 .domain([0, d3.max(dataset, function(d){
+									 	return d[1];
+									 })])
+									 .range([2,5]);
+
+				var svg = d3.select("#random")
+							.append("svg")
+							.attr("width", w)
+							.attr("height", h);
+
+				svg.selectAll("circle")
+				   .data(dataset)
+				   .enter()
+				   .append("circle")
+				   .attr("cx", function(d) {
+				   		return xScale(d[0]);
+				   })
+				   .attr("cy", function(d) {
+				   		return yScale(d[1]);
+				   })
+				   .attr("r", function(d) {
+				   		return rScale(d[1]);
+				   });
+
+				svg.selectAll("text")
+				   .data(dataset)
+				   .enter()
+				   .append("text")
+				   .text(function(d) {
+				   		return d[0] + "," + d[1];
+				   })
+				   .attr("x", function(d) {
+				   		return xScale(d[0]);
+				   })
+				   .attr("y", function(d) {
+				   		return yScale(d[1]);
+				   })
+				   .attr("font-family", "sans-serif")
+				   .attr("font-size", "11px")
+				   .attr("fill", "red");
+
+				var xAxis = d3.svg.axis()
+								  .scale(xScale)
+							  	  .orient("bottom");
+				svg.append("g")
+					.call(xAxis);
+
+
+
 				// //Set margins, width, and height
 				// var margin = {top: 20, right: 20, bottom: 30, left: 40},
 				// width = 480 - margin.left - margin.right,

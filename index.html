@@ -15,7 +15,7 @@
 			<h1>Commit Visualization</h1>
 		</div>
 		<hr>
-		<div class="container">
+		<div id="subHeaderContainer">
 			<div class="row">
 				<h4 id="commitID"class="col-md-5">
 					H4sIAAAAAAAAAA3HyxECQQgA0Yim-AwwEIIBGABgjV50D-7B8N0-vKoGdIPzd3u-7xDo9JA9R7fzEKw5siKHLHZvUzZEIHBE6ZYy5nBfnFWJ6lHlvnk1fI7xOr4n4BUBCbJRsMklrGm0qVQ1S7OtQ68Lw8UihvMP-2NSlJAAAAA
@@ -92,11 +92,7 @@
 				<p>Largest Weight: <b>{{highestW}}</b></p>
 				<p>Total Weight: <b>{{totalW}}</b></p>
 				<p>Confidence: <b>{{confidence}}</b></p>
-			</div>
-
-			<!-- this is the directive -->
-			<timeline-D3></timeline-D3>
-		
+			</div>		
 		</div>
 		<div id="bottomContainer">
 			<div id="bottomContent" >
@@ -121,7 +117,10 @@
 				</table>
 			</div>
 		</div>
-
+	</div>
+	<div id="random">
+		<!-- this is the directive -->
+		<timeline-D3></timeline-D3>
 	</div>
 	<!-- Loading in all the JS files: angular, D3, jQuery-->
 	<script type="text/javascript" src="./js/angular.min.js"></script>

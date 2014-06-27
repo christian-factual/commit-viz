@@ -24,6 +24,11 @@ angular.module('angularCharts').directive('acChart', [
         'padding:5px;',
         'color:#fff;'
       ].join('');
+
+    /**
+    * 
+    **/
+    var color = d3.scale.category20();
     /**
    * Utility function to call when we run out of colors!
    * @return {[type]} [description]
@@ -128,13 +133,15 @@ angular.module('angularCharts').directive('acChart', [
      * @return {[type]} [description]
      */
       function prepareData() {
+        console.log("prepareData is called!");
         data = scope.acData;
         chartType = scope.acChart;
         series = data ? data.series || [] : [];
         points = data ? data.data || [] : [];
         if (scope.acConfig) {
           angular.extend(config, scope.acConfig);
-          config.colors = config.colors.concat(defaultColors);
+
+          // config.colors = config.colors.concat(defaultColors);
         }
       }
       /**
@@ -993,7 +1000,7 @@ angular.module('angularCharts').directive('acChart', [
         if (chartType == 'pie') {
           angular.forEach(points, function (value, key) {
             scope.legends.push({
-              color: config.colors[key],
+              color: color(key),
               title: value.x
             });
           });
@@ -1022,13 +1029,19 @@ angular.module('angularCharts').directive('acChart', [
      * @return {[type]}   [description]
      */
       function getColor(i) {
-        if (i < config.colors.length) {
-          return config.colors[i];
-        } else {
-          var color = getRandomColor();
-          config.colors.push(color);
-          return color;
-        }
+        console.log("get color called! Index is: ", i);
+        console.log(config.colors);
+        return color(i);
+        // if (i < config.colors.length) {
+        //   console.log(config.colors.length);
+        //   console.log("This is the color: ", config.colors[i])
+        //   return config.colors[i];
+        // } else {
+        //   var color = getRandomColor();
+        //   config.colors.push(color);
+        //   console.log("Adding this color: ", color);
+        //   return color;
+        // }
       }
       var w = angular.element($window);
       var resizePromise = null;
