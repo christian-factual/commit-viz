@@ -248,6 +248,7 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			//set table info
 			other = returnJSON;
 			$scope.tableInfo = inputReportCleaner.generateTableInfo();
+			console.log($scope.tableInfo);
 			//set chart info
 			$scope.data = inputReportCleaner.generateChartInfo($scope.activeTab);
 			//set content

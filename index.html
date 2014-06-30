@@ -58,10 +58,9 @@
 				</div>
 			</div>
 		</div>
-		<input type="checkbox" ng-model="checked">
-		<div id="YextIndicator" class="row" ng-hide="checked">
-			<div class="col-md-3 col-md-offset-9">
-				<div class="alert alert-info"> Yext Powered Listing</div>
+		<div id="YextIndicator" class="row" ng-show="tableInfo.hasOwnProperty('yext_id')">
+			<div class="col-md-3 col-md-offset-10">
+				<div class="alert alert-info" style="position:absolute"> Yext Powered Listing</div>
 			</div>
 		</div>
 
