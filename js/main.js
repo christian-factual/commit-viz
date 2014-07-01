@@ -1,18 +1,11 @@
 //Making a static list of all the attributes
 
 var commitID = "H4sIAAAAAAAAAA3HyxECQQgA0Yim-AwwEIIBGABgjV50D-7B8N0-vKoGdIPzd3u-7xDo9JA9R7fzEKw5siKHLHZvUzZEIHBE6ZYy5nBfnFWJ6lHlvnk1fI7xOr4n4BUBCbJRsMklrGm0qVQ1S7OtQ68Lw8UihvMP-2NSlJAAAAA";
-// //Get the JSON file from the server
-// var commitReport;
-// //currently this is wrong, must do in angular.
-// $.getJSON("http://localhost:8888/resources/peets_input_report.json", function(json) {
-//     // console.log(json); // this will show the info it in firebug console
-//     commitReport = json;
-// });
 var other = {};
 
 var commitVizModule = angular.module('commitViz',['angularCharts'])
 	.value('attArrays', {
-		'main': ['Name', 'Tel', 'Address', 'Locality', 'Region', 'Geocode'],
+		'main': ['Name', 'Tel', 'Address', 'Locality', 'Region'], //, 'Geocode'
 		'other': ['Postcode', 'Country', 'Website'] //, 'Category ID'
 	})
 	.filter('splitCap', function(){
@@ -146,7 +139,8 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			}
 			pInfo = {
 				// series: ['thing', 'thing2', 'thing3'],
-				data: dataArr
+				//sort in order from greatest to least then reverse the order
+				data: _.sortBy(dataArr, function(num){return Math.min(num.y[0])}).reverse()
 			}
 			return pInfo;
 		}
@@ -248,7 +242,6 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			//set table info
 			other = returnJSON;
 			$scope.tableInfo = inputReportCleaner.generateTableInfo();
-			console.log($scope.tableInfo);
 			//set chart info
 			$scope.data = inputReportCleaner.generateChartInfo($scope.activeTab);
 			//set content
@@ -295,18 +288,141 @@ commitVizModule.directive('timelineD3', [
 			link: function(scope, element){
 				(function () {
 
+				//temp variables
+				//Array of objects. Each object had a time and a confidence
+				var testData = [
+				{"source": "yelp.com","time": 1349823989000, "confidence": 10},
+				{"source": "tupalo.com", "time": 1320000000000, "confidence": 13},
+				{"source": "factual.com","time": 1397183604000, "confidence": 25},
+				{"source": "menupix.com","time": 1371138820000, "confidence": 30}
+				];
+
+				var sortedData = _.sortBy(testData, function(num){return Math.min(num.time)});
+
+				var hover = function () {},
+			        mouseover = function () {},
+			        mouseout = function () {},
+			        click = function () {},
+			        scroll = function () {},
+			        orient = "bottom",
+			        width = null,
+			        height = null,
+			        tickFormat = { format: d3.time.format("%m/%y"), //%m/%d/%y %H:%M
+			          tickTime: d3.time.month,
+			          tickInterval: 6,
+			          tickSize: 6 },
+			        colorCycle = d3.scale.category20(),
+			        colorPropertyName = null,
+			        display = "circle",
+			        beginning = 0,
+			        ending = 0,
+			        margin = {top: 20, right: 20, bottom: 30, left: 40},
+			        stacked = false,
+			        rotateTicks = false,
+			        itemHeight = 20,
+			        itemMargin = 5,
+			        showTodayLine = false,
+			        showTodayFormat = {marginTop: 25, marginBottom: 0, width: 1, color: colorCycle},
+			        showBorderLine = false,
+			        showBorderFormat = {marginTop: 25, marginBottom: 0, width: 1, color: colorCycle}
+			      ;
+
+			    beginning = _.first(sortedData).time;
+			    console.log("This is the first time: ", beginning);
+			    ending = _.last(sortedData).time;
+			    console.log("This is the last time: ", ending);
+
 				//Set margins, width, and height
-				var margin = {top: 20, right: 20, bottom: 30, left: 40},
-				width = 480 - margin.left - margin.right,
+				width = 900 - margin.left - margin.right,
 				height = 360 - margin.top - margin.bottom;
 
+				var scaleFactor = (1/(ending - beginning)) * (width - margin.left - margin.right);
+				console.log(scaleFactor);
+
         		//Create the d3 element and position it based on margins
-       			var svg = d3.select(element[0])
+       			var svg = d3.select('#random')
         			.append("svg")
         			.attr('width', width + margin.left + margin.right)
         			.attr('height', height + margin.top + margin.bottom)
         			.append("g")
-        			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        		//Need to get beginning, ending values****
+        		//Need scales for the input
+        		var xScale = d3.time.scale()
+						       .domain([beginning, ending])
+						       .range([margin.left, width - margin.right]);
+
+				var xAxis = d3.svg.axis()
+					       	  .scale(xScale)
+					          .orient(orient)
+					          .tickFormat(tickFormat.format)
+					          .ticks(tickFormat.tickTime, tickFormat.tickInterval)
+					          .tickSize(tickFormat.tickSize);
+				
+				//add the static data
+				var circles = svg.selectAll("circle")
+								.data(sortedData)
+								.enter()
+								.append("circle")
+								.attr("cx", function(d, i) {
+									console.log("Value ", i,"'s time:", d.time);
+									return getXPos(d,i);
+								})
+								.attr("cy", height/2)
+								.attr("r", function(d) {
+									return d.confidence;
+								})
+								.style("fill", function(d, i){
+									return getColor(i);
+								});
+
+				svg.selectAll("text")
+				   .data(sortedData)
+				   .enter()
+				   .append("text")
+				   .text(function(d){
+				   		var date = new Date(d.time);
+				   		return d.source + " " + (date.getMonth()+1) + "/" + date.getDate()+"/" + date.getFullYear();
+				   })
+				   .attr("text-anchor", "right")
+				   .attr("x", function(d, i){
+				   		return getXPos(d,i);
+				   })
+				   .attr("y", function(d,i){
+				   		return height/3 +20;
+				   })
+				   .attr("font-size", "11px")
+				   .attr("fill", "red");
+
+				//Render X axis
+				svg.append("g")
+				   .attr("class", "x axis")
+				   .attr("transform", "translate(0," + height + ")")
+				   .call(xAxis);
+
+
+				function getXPos(d, i) {
+        			return margin.left + (d.time - beginning) * scaleFactor;
+      			}
+
+      			function setWidth() {
+      				if (!width && !gParentSize.width) {
+      					throw "width of the timeline is not set. As of Firefox 27, timeline().with(x) needs to be explicitly set in order to render";
+      				} 
+      				else if (!(width && gParentSize.width)) {
+      					if (!width) {
+      						width = gParentItem.attr("width");
+      					} else {
+      						gParentItem.attr("width", width);
+      					}
+      				}
+       			 // if both are set, do nothing
+    			}
+
+    			function getColor(i){
+    				return colorCycle(i);
+    			}
 
 
 				})();
