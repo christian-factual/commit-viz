@@ -288,6 +288,17 @@ commitVizModule.directive('timelineD3', [
 			link: function(scope, element){
 				(function () {
 
+				//Spare HTML
+				var tooltip = [
+				'display:none;',
+				'position:absolute;',
+				'border:1px solid #333;',
+				'background-color:#161616;',
+				'border-radius:5px;',
+				'padding:5px;',
+				'color:#fff;'
+				].join('');
+
 				//temp variables
 				//Array of objects. Each object had a time and a confidence
 				var testData = [
@@ -370,12 +381,30 @@ commitVizModule.directive('timelineD3', [
 									return getXPos(d,i);
 								})
 								.attr("cy", height/2)
-								.attr("r", function(d) {
-									return d.confidence;
-								})
 								.style("fill", function(d, i){
 									return getColor(i);
-								});
+								})
+								.attr("r", 0)
+								.on('mouseover', function (d) {
+									makeToolTip({ 
+										index: d
+									}, d3.event);
+									scope.$apply();
+								})
+								.on('mouseleave', function (d) {
+									removeToolTip();
+									scope.$apply();
+								}).on('mousemove', function (d) {
+									updateToolTip(d3.event);
+								}).on('click', function (d) {
+									scope.$apply();
+								})
+								.transition()
+									.duration(1000)
+									.ease('cubic-in-out')
+									.attr("r", function(d) {
+										return d.confidence;
+									});
 
 				svg.selectAll("text")
 				   .data(sortedData)
@@ -398,7 +427,7 @@ commitVizModule.directive('timelineD3', [
 				//Render X axis
 				svg.append("g")
 				   .attr("class", "x axis")
-				   .attr("transform", "translate(0," + height + ")")
+				   .attr("transform", "translate(0," + 3*height/4 + ")") //controls the height of the timeline
 				   .call(xAxis);
 
 
@@ -406,23 +435,35 @@ commitVizModule.directive('timelineD3', [
         			return margin.left + (d.time - beginning) * scaleFactor;
       			}
 
-      			function setWidth() {
-      				if (!width && !gParentSize.width) {
-      					throw "width of the timeline is not set. As of Firefox 27, timeline().with(x) needs to be explicitly set in order to render";
-      				} 
-      				else if (!(width && gParentSize.width)) {
-      					if (!width) {
-      						width = gParentItem.attr("width");
-      					} else {
-      						gParentItem.attr("width", width);
-      					}
-      				}
-       			 // if both are set, do nothing
-    			}
-
     			function getColor(i){
     				return colorCycle(i);
     			}
+
+    			/**
+			    * Creates and displays tooltip
+			    * @return {[type]} [description]
+			    */
+			    function makeToolTip(data, event) {
+			    	console.log("makeToolTip Called: ", data, event);
+			        data = "Input: " + data;
+			        angular.element('<p id="tooltip" style="' + tooltip + '"></p>').html(data).appendTo('body').fadeIn('slow').css({
+			        left: event.pageX + 20,
+			        top: event.pageY - 30
+			        });
+			      }
+			      /**
+			     * Clears the tooltip from body
+			     * @return {[type]} [description]
+			     */
+			      function removeToolTip() {
+			        angular.element('#tooltip').remove();
+			      }
+			      function updateToolTip(event) {
+			        angular.element('#tooltip').css({
+			          left: event.pageX + 20,
+			          top: event.pageY - 30
+			        });
+			      }
 
 
 				})();
