@@ -320,7 +320,7 @@ commitVizModule.directive('timelineD3', [
 			        height = null,
 			        tickFormat = { format: d3.time.format("%m/%y"), //%m/%d/%y %H:%M
 			          tickTime: d3.time.month,
-			          tickInterval: 6,
+			          tickInterval: 3,
 			          tickSize: 6 },
 			        colorCycle = d3.scale.category20(),
 			        colorPropertyName = null,
@@ -358,7 +358,6 @@ commitVizModule.directive('timelineD3', [
         			.append("g")
         				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        		//Need to get beginning, ending values****
         		//Need scales for the input
         		var xScale = d3.time.scale()
 						       .domain([beginning, ending])
@@ -386,13 +385,13 @@ commitVizModule.directive('timelineD3', [
 								})
 								.attr("r", 0)
 								.on('mouseover', function (d) {
-									makeToolTip({ 
-										index: d
-									}, d3.event);
+									makeToolTip(d, d3.event);
+									d3.select(this).transition().duration(200).style('stroke', 'red').style('stroke-width', '2px');
 									scope.$apply();
 								})
 								.on('mouseleave', function (d) {
 									removeToolTip();
+									d3.select(this).transition().duration(200).style('stroke', '').style('stroke-width', '');
 									scope.$apply();
 								}).on('mousemove', function (d) {
 									updateToolTip(d3.event);
@@ -406,37 +405,49 @@ commitVizModule.directive('timelineD3', [
 										return d.confidence;
 									});
 
-				svg.selectAll("text")
-				   .data(sortedData)
-				   .enter()
-				   .append("text")
-				   .text(function(d){
-				   		var date = new Date(d.time);
-				   		return d.source + " " + (date.getMonth()+1) + "/" + date.getDate()+"/" + date.getFullYear();
-				   })
-				   .attr("text-anchor", "right")
-				   .attr("x", function(d, i){
-				   		return getXPos(d,i);
-				   })
-				   .attr("y", function(d,i){
-				   		return height/3 +20;
-				   })
-				   .attr("font-size", "11px")
-				   .attr("fill", "red");
-
 				//Render X axis
 				svg.append("g")
 				   .attr("class", "x axis")
-				   .attr("transform", "translate(0," + 3*height/4 + ")") //controls the height of the timeline
+				   .attr("transform", "translate(0," + 2*height/3 + ")") //controls the height of the timeline
 				   .call(xAxis);
 
-
+				//******Helper functions
+				/** 
+				* Take a data object and an index and returns 
+				* the value for the x coordinate.
+				* @return int xPosition
+				*/
 				function getXPos(d, i) {
         			return margin.left + (d.time - beginning) * scaleFactor;
       			}
 
+      			/** 
+				* Take a data object and an index and returns 
+				* the value for the x coordinate.
+				* @return int xPosition
+				*/
+      			function getYPis(d,i){
+      				/*This method is going to need to take in 
+      				//what its input it is so that the proper
+      				/ height will be so that it lies on the correct axis
+      				*/
+      			}
+
+    			/**
+			    * Takes index and returns a color value
+			    * @return {[type]} [description]
+			    */
     			function getColor(i){
     				return colorCycle(i);
+    			}
+
+    			/**
+			    * Formats date object into a string
+			    * @return string MM/DD/YYYY HH:MM
+			    */
+    			function formatDate(date){
+    				var year = date.getFullYear()
+    				return (date.getMonth()+1) + "/" + date.getDay() + "/" +date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
     			}
 
     			/**
@@ -444,13 +455,14 @@ commitVizModule.directive('timelineD3', [
 			    * @return {[type]} [description]
 			    */
 			    function makeToolTip(data, event) {
-			    	console.log("makeToolTip Called: ", data, event);
-			        data = "Input: " + data;
+			    	var date = new Date(data.time)
+			        data = "Source: " + data.source + "<br> Date: " + formatDate(date) + "<br> Weight: " + data.confidence;
 			        angular.element('<p id="tooltip" style="' + tooltip + '"></p>').html(data).appendTo('body').fadeIn('slow').css({
 			        left: event.pageX + 20,
 			        top: event.pageY - 30
 			        });
 			      }
+
 			      /**
 			     * Clears the tooltip from body
 			     * @return {[type]} [description]
@@ -464,8 +476,6 @@ commitVizModule.directive('timelineD3', [
 			          top: event.pageY - 30
 			        });
 			      }
-
-
 				})();
 			}
 		};
