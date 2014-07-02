@@ -184,15 +184,6 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		}
 	})
 	.controller('pageCtrl', function($scope, attArrays, dsApiService, inputReportCleaner){
-		//random
-		$scope.myData = [
-			{name: 'AngularJS', count: 300},
-			{name: 'D3.JS', count: 150},
-			{name: 'jQuery', count: 400},
-			{name: 'Backbone.js', count: 300},
-			{name: 'Ember.js', count: 100}
-		];
-
 		//vars
 		$scope.inputID = '';
 		$scope.tableInfo = {};
@@ -256,7 +247,7 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		$scope.data = {}; //Data for the pie
 		$scope.data2 = {}; //data for the bar
 
-		//config of the chrart details
+		//config of the chart details
 		$scope.config = {
 			labels: false,
 			title : "",
@@ -299,16 +290,30 @@ commitVizModule.directive('timelineD3', [
 				'color:#fff;'
 				].join('');
 
-				//temp variables
-				//Array of objects. Each object had a time and a confidence
-				var testData = [
-				{"source": "yelp.com","time": 1349823989000, "confidence": 10},
-				{"source": "tupalo.com", "time": 1320000000000, "confidence": 13},
-				{"source": "factual.com","time": 1397183604000, "confidence": 25},
-				{"source": "menupix.com","time": 1371138820000, "confidence": 30}
-				];
+				//New data structure with correct formatting.
+				var testData = {
+					series: ['310-234-1234', '713-555-1234'],
+					sources: ["yelp.com", "factual.com", "menupix.com"],
+					values: [{source: "yelp.com",
+						input: '713-555-1234',
+						weight: 13,
+						time: 1349823989000
+					}, {source: "yelp.com",
+						input: '713-555-1234',
+						weight: 20,
+						time: 1320000000000
+					}, {source: "factual.com",
+						input: '713-555-1234',
+						weight: 30,
+						time: 1397183604000
+					}, {source: "menupix.com",
+						input: '310-234-1234',
+						weight: 10,
+						time: 1371138820000
+					}]
+				};
 
-				var sortedData = _.sortBy(testData, function(num){return Math.min(num.time)});
+				testData.values = _.sortBy(testData.values, function(entry){return Math.min(entry.time)});
 
 				var hover = function () {},
 			        mouseover = function () {},
@@ -338,14 +343,14 @@ commitVizModule.directive('timelineD3', [
 			        showBorderFormat = {marginTop: 25, marginBottom: 0, width: 1, color: colorCycle}
 			      ;
 
-			    beginning = _.first(sortedData).time;
+			    beginning = _.first(testData.values).time; //get the beginning time
 			    console.log("This is the first time: ", beginning);
-			    ending = _.last(sortedData).time;
+			    ending = _.last(testData.values).time;
 			    console.log("This is the last time: ", ending);
 
 				//Set margins, width, and height
 				width = 900 - margin.left - margin.right,
-				height = 360 - margin.top - margin.bottom;
+				height = 400 - margin.top - margin.bottom;
 
 				var scaleFactor = (1/(ending - beginning)) * (width - margin.left - margin.right);
 				console.log(scaleFactor);
@@ -372,14 +377,14 @@ commitVizModule.directive('timelineD3', [
 				
 				//add the static data
 				var circles = svg.selectAll("circle")
-								.data(sortedData)
+								.data(testData.values)
 								.enter()
 								.append("circle")
 								.attr("cx", function(d, i) {
 									console.log("Value ", i,"'s time:", d.time);
 									return getXPos(d,i);
 								})
-								.attr("cy", height/2)
+								.attr("cy", height/2) //this will change when the different axes are needed.
 								.style("fill", function(d, i){
 									return getColor(i);
 								})
@@ -402,7 +407,7 @@ commitVizModule.directive('timelineD3', [
 									.duration(1000)
 									.ease('cubic-in-out')
 									.attr("r", function(d) {
-										return d.confidence;
+										return d.weight;
 									});
 
 				//Render X axis
@@ -446,8 +451,9 @@ commitVizModule.directive('timelineD3', [
 			    * @return string MM/DD/YYYY HH:MM
 			    */
     			function formatDate(date){
-    				var year = date.getFullYear()
-    				return (date.getMonth()+1) + "/" + date.getDay() + "/" +date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    				var year = date.getFullYear().toString().slice(-2);
+    				var time = date.toTimeString().slice(0,8);
+    				return (date.getMonth()+1) + "/" + date.getDate() + "/" + year + " " +time;
     			}
 
     			/**
@@ -456,7 +462,7 @@ commitVizModule.directive('timelineD3', [
 			    */
 			    function makeToolTip(data, event) {
 			    	var date = new Date(data.time)
-			        data = "Source: " + data.source + "<br> Date: " + formatDate(date) + "<br> Weight: " + data.confidence;
+			        data = "Source: " + data.source + "<br> Date: " + formatDate(date) + "<br> Weight: " + data.weight;
 			        angular.element('<p id="tooltip" style="' + tooltip + '"></p>').html(data).appendTo('body').fadeIn('slow').css({
 			        left: event.pageX + 20,
 			        top: event.pageY - 30
