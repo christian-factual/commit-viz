@@ -344,16 +344,12 @@ commitVizModule.directive('timelineD3', [
 			      ;
 
 			    beginning = _.first(testData.values).time; //get the beginning time
-			    console.log("This is the first time: ", beginning);
 			    ending = _.last(testData.values).time;
-			    console.log("This is the last time: ", ending);
 
 				//Set margins, width, and height
 				width = 900 - margin.left - margin.right,
 				height = 400 - margin.top - margin.bottom;
-
 				var scaleFactor = (1/(ending - beginning)) * (width - margin.left - margin.right);
-				console.log(scaleFactor);
 
         		//Create the d3 element and position it based on margins
        			var svg = d3.select('#random')
@@ -374,6 +370,16 @@ commitVizModule.directive('timelineD3', [
 					          .tickFormat(tickFormat.format)
 					          .ticks(tickFormat.tickTime, tickFormat.tickInterval)
 					          .tickSize(tickFormat.tickSize);
+
+				var yScale = d3.scale.ordinal()
+							   .domain(_.map(testData.values, function(entry){return entry.input}))
+							   .range([height, 20]);
+				
+				var yAxis = d3.svg.axis()
+							  .scale(yScale)
+							  .orient('left');
+
+
 				
 				//add the static data
 				var circles = svg.selectAll("circle")
@@ -381,7 +387,6 @@ commitVizModule.directive('timelineD3', [
 								.enter()
 								.append("circle")
 								.attr("cx", function(d, i) {
-									console.log("Value ", i,"'s time:", d.time);
 									return getXPos(d,i);
 								})
 								.attr("cy", height/2) //this will change when the different axes are needed.
@@ -415,6 +420,11 @@ commitVizModule.directive('timelineD3', [
 				   .attr("class", "x axis")
 				   .attr("transform", "translate(0," + 2*height/3 + ")") //controls the height of the timeline
 				   .call(xAxis);
+				//Render Y axis
+				svg.append('g')
+				   .attr('class', 'y axis')
+				   .attr("transform", "translate(" + margin.left + ",0)")
+				   .call(yAxis);
 
 				//******Helper functions
 				/** 
