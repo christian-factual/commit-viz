@@ -332,7 +332,7 @@ commitVizModule.directive('timelineD3', [
 			        display = "circle",
 			        beginning = 0,
 			        ending = 0,
-			        margin = {top: 20, right: 20, bottom: 30, left: 40},
+			        margin = {top: 20, right: 20, bottom: 30, left: 50},
 			        stacked = false,
 			        rotateTicks = false,
 			        itemHeight = 20,
@@ -343,7 +343,7 @@ commitVizModule.directive('timelineD3', [
 			        showBorderFormat = {marginTop: 25, marginBottom: 0, width: 1, color: colorCycle}
 			      ;
 
-			    beginning = _.first(testData.values).time; //get the beginning time
+			    beginning = _.first(testData.values).time -10000000000; //get the beginning time
 			    ending = _.last(testData.values).time;
 
 				//Set margins, width, and height
@@ -371,15 +371,27 @@ commitVizModule.directive('timelineD3', [
 					          .ticks(tickFormat.tickTime, tickFormat.tickInterval)
 					          .tickSize(tickFormat.tickSize);
 
-				var yScale = d3.scale.ordinal()
-							   .domain(_.map(testData.values, function(entry){return entry.input}))
-							   .range([height, 20]);
-				
-				var yAxis = d3.svg.axis()
-							  .scale(yScale)
-							  .orient('left');
+				//make the pseudo y-axis
+				//Draw the line
+ 				var yAxis = svg.append("line")
+		                        .attr("x1", margin.left)
+		                        .attr("y1", margin.top)
+		                        .attr("x2", margin.left)
+		                        .attr("y2", height)
+		                        .attr("stroke-width", 1)
+		                        .attr("stroke", "black")
+		                        .attr("shape-rendering", "crispEdges")
+		                        .attr("class", "y axis");
 
-
+				assignHeights();		        
+		        // var ticks = svg.selectAll("tick")
+		        // 			   .data(testData.series)
+		        // 			   .enter()
+		        // 			   .append("line")
+		        //                .attr("x1", margin.left)
+		        //                .attr("y1", margin.top)
+		        //                .attr("x2", margin.left)
+		        //                .attr("y2", height)		        			   
 				
 				//add the static data
 				var circles = svg.selectAll("circle")
@@ -418,15 +430,41 @@ commitVizModule.directive('timelineD3', [
 				//Render X axis
 				svg.append("g")
 				   .attr("class", "x axis")
-				   .attr("transform", "translate(0," + 2*height/3 + ")") //controls the height of the timeline
+				   .attr("transform", "translate(0," + height + ")") //controls the height of the timeline
 				   .call(xAxis);
-				//Render Y axis
-				svg.append('g')
-				   .attr('class', 'y axis')
-				   .attr("transform", "translate(" + margin.left + ",0)")
-				   .call(yAxis);
 
 				//******Helper functions
+
+				var _tickHeights = [];
+
+				/**
+				* Assign the heights for each input in the data series.
+				* Value assigns the _tickheights var for use in getYPos.
+				* @return none
+				*/
+				function assignHeights(){
+					var temp = {};
+					var totalTicks = testData.series.length;
+					console.log(totalTicks);
+					var series = testData.series;
+					var totalHeight = height - 50; 
+					var spacing = totalHeight/totalTicks;
+					var array = []
+					var tempEntry = {};
+
+					for(var i=0; i<totalTicks; i+=1){
+						var space = (spacing * i)+(25+margin.top);
+						var key = series[i].toString();
+						console.log(key);
+						array.push(space);
+						tempEntry = {key: space};
+						console.log(tempEntry);
+					}
+					//assign
+					console.log(array);
+					_tickHeights = temp;
+				}
+
 				/** 
 				* Take a data object and an index and returns 
 				* the value for the x coordinate.
@@ -441,7 +479,7 @@ commitVizModule.directive('timelineD3', [
 				* the value for the x coordinate.
 				* @return int xPosition
 				*/
-      			function getYPis(d,i){
+      			function getYPos(d,i){
       				/*This method is going to need to take in 
       				//what its input it is so that the proper
       				/ height will be so that it lies on the correct axis
