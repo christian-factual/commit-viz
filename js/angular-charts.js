@@ -71,7 +71,7 @@ angular.module('angularCharts').directive('acChart', [
             'rgb(73,66,204)',
             'rgb(0,128,0)'
           ],
-          innerRadius: 0,
+          innerRadius: 165,
           lineLegend: 'lineEnd'
         };
       var totalWidth = element.width(), totalHeight = element.height();

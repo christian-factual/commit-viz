@@ -56,7 +56,7 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 			$http({
 				method: 'GET',
 				url: _finalURL
-			})
+			}, { cache: true }) //turn caching on
 			.success(function(data, status){
 				console.log("This worked!");
 				inputReportCleaner.storeJSON(data);
@@ -246,27 +246,6 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 		//scope.data information that is set.
 		$scope.data = {}; //Data for the pie
 		$scope.data2 = {}; //data for the bar
-
-		//config of the chart details
-		$scope.config = {
-			labels: false,
-			title : "",
-			legend : {
-				display: true,
-				position:'left'
-			},
-			click : function(d) {
-			
-			},
-			mouseover : function(d) {
-				
-			},
-			mouseout : function(d) {
-				
-			},
-			innerRadius: 165,
-			lineLegend: 'lineEnd',
-		}
 	});
 
 commitVizModule.directive('timelineD3', [
@@ -354,7 +333,6 @@ commitVizModule.directive('timelineD3', [
 			    beginning = _.first(testData.values).time -10000000000; //get the beginning time
 			    ending = _.last(testData.values).time + 5000000000;
 
-			    console.log(angular.element($window).width());
 			    var w = angular.element($window);
 			    w.bind('resize', function (ev) {
 			    		totalWidth = w.width();
@@ -407,7 +385,6 @@ commitVizModule.directive('timelineD3', [
 		        			   .append("line")
 		                       .attr("x1", margin.left)
 		                       .attr("y1", function(d,i){
-		                       		console.log(getYPos(d,i));
 		                       		return getYPos(d,i);
 		                       })
 		                       .attr("x2", width - margin.right)
@@ -423,7 +400,6 @@ commitVizModule.directive('timelineD3', [
 				                        .enter()
 				                        .append("text")
 						                .attr("x", function(d) { 
-						                 	console.log(d);
 						                 	return 0;
 						             	})
 						                .attr("y", function(d) { 
@@ -467,7 +443,6 @@ commitVizModule.directive('timelineD3', [
 								})
 								.transition()
 									.duration(function(d,i){
-										console.log("in transition: ", d);
 										return 1000 + (i*250);
 									})
 									.ease('cubic-in-out')
@@ -492,7 +467,6 @@ commitVizModule.directive('timelineD3', [
 				function assignHeights(){
 					var temp = {};
 					var totalTicks = testData.series.length;
-					console.log(totalTicks);
 					var totalHeight = height - 50 -margin.bottom; //25 buffer from top & bottom
 					var spacing = totalHeight/(totalTicks-1);
 
