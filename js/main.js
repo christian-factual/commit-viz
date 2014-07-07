@@ -270,7 +270,8 @@ var commitVizModule = angular.module('commitViz',['angularCharts'])
 	});
 
 commitVizModule.directive('timelineD3', [
-	function () {
+	'$window',
+	function ($window) {
 		return {
 			restrict: 'E', 
 			scope: {
@@ -292,8 +293,8 @@ commitVizModule.directive('timelineD3', [
 
 				//New data structure with correct formatting.
 				var testData = {
-					series: ['310-234-1234', '713-555-1234'],
-					sources: ["yelp.com", "factual.com", "menupix.com"],
+					series: ['310-234-1234', '713-555-1234', '505-555-1234'],
+					sources: ["yelp.com", "factual.com", "menupix.com", "yext.com", "menu.com"],
 					values: [{source: "yelp.com",
 						input: '713-555-1234',
 						weight: 13,
@@ -310,9 +311,19 @@ commitVizModule.directive('timelineD3', [
 						input: '310-234-1234',
 						weight: 10,
 						time: 1371138820000
+					},{source: "menu.com",
+						input: '310-234-1234',
+						weight: 15,
+						time: 1381138820000
+					},
+					{source: "yext.com",
+						input: '505-555-1234',
+						weight: 25,
+						time: 1398138820000
 					}]
 				};
 
+				//have this done in the testData generator method
 				testData.values = _.sortBy(testData.values, function(entry){return Math.min(entry.time)});
 
 				var hover = function () {},
@@ -329,12 +340,9 @@ commitVizModule.directive('timelineD3', [
 			          tickSize: 6 },
 			        colorCycle = d3.scale.category20(),
 			        colorPropertyName = null,
-			        display = "circle",
 			        beginning = 0,
 			        ending = 0,
-			        margin = {top: 20, right: 20, bottom: 30, left: 50},
-			        stacked = false,
-			        rotateTicks = false,
+			        margin = {top: 20, right: 40, bottom: 30, left: 50},
 			        itemHeight = 20,
 			        itemMargin = 5,
 			        showTodayLine = false,
@@ -344,12 +352,22 @@ commitVizModule.directive('timelineD3', [
 			      ;
 
 			    beginning = _.first(testData.values).time -10000000000; //get the beginning time
-			    ending = _.last(testData.values).time;
+			    ending = _.last(testData.values).time + 5000000000;
+
+			    console.log(angular.element($window).width());
+			    var w = angular.element($window);
+			    w.bind('resize', function (ev) {
+			    		totalWidth = w.width();
+			    		console.log("Total Width: ", totalWidth);
+			    		totalHeight = element.height();
+			    });
 
 				//Set margins, width, and height
-				width = 900 - margin.left - margin.right,
+				width = angular.element($window).width() -28 - margin.left - margin.right,
 				height = 400 - margin.top - margin.bottom;
 				var scaleFactor = (1/(ending - beginning)) * (width - margin.left - margin.right);
+				//initialize the item heights
+				assignHeights();
 
         		//Create the d3 element and position it based on margins
        			var svg = d3.select('#random')
@@ -373,25 +391,50 @@ commitVizModule.directive('timelineD3', [
 
 				//make the pseudo y-axis
 				//Draw the line
- 				var yAxis = svg.append("line")
-		                        .attr("x1", margin.left)
-		                        .attr("y1", margin.top)
-		                        .attr("x2", margin.left)
-		                        .attr("y2", height)
-		                        .attr("stroke-width", 1)
-		                        .attr("stroke", "black")
-		                        .attr("shape-rendering", "crispEdges")
-		                        .attr("class", "y axis");
+ 				// var yAxis = svg.append("line")
+		   //                      .attr("x1", margin.left)
+		   //                      .attr("y1", margin.top)
+		   //                      .attr("x2", margin.left)
+		   //                      .attr("y2", height)
+		   //                      .attr("stroke-width", 1)
+		   //                      .attr("stroke", "black")
+		   //                      .attr("shape-rendering", "crispEdges")
+		   //                      .attr("class", "y axis");
+		        
+		        var ticks = svg.selectAll("tick")
+		        			   .data(testData.series)
+		        			   .enter()
+		        			   .append("line")
+		                       .attr("x1", margin.left)
+		                       .attr("y1", function(d,i){
+		                       		console.log(getYPos(d,i));
+		                       		return getYPos(d,i);
+		                       })
+		                       .attr("x2", width - margin.right)
+		                       .attr("y2", function(d,i){
+		                       		return getYPos(d,i);
+		                       })	
+		                       .attr("stroke-width", 1)
+		                       .attr("stroke", "grey");	   
 
-				assignHeights();		        
-		        // var ticks = svg.selectAll("tick")
-		        // 			   .data(testData.series)
-		        // 			   .enter()
-		        // 			   .append("line")
-		        //                .attr("x1", margin.left)
-		        //                .attr("y1", margin.top)
-		        //                .attr("x2", margin.left)
-		        //                .attr("y2", height)		        			   
+		        //Add the SVG Text Element to the svgContainer
+				var text = svg.selectAll("text")
+				                        .data(testData.series)
+				                        .enter()
+				                        .append("text")
+						                .attr("x", function(d) { 
+						                 	console.log(d);
+						                 	return 0;
+						             	})
+						                .attr("y", function(d) { 
+						                 	return getYPos(d)-5; 
+						                 })
+						                .text( function (d) { 
+						                	return d; 
+						                })
+						                .attr("font-family", "sans-serif")
+						                .attr("font-size", "11px")
+			         				    .attr("fill", "black");     			   
 				
 				//add the static data
 				var circles = svg.selectAll("circle")
@@ -401,9 +444,11 @@ commitVizModule.directive('timelineD3', [
 								.attr("cx", function(d, i) {
 									return getXPos(d,i);
 								})
-								.attr("cy", height/2) //this will change when the different axes are needed.
+								.attr("cy", function(d,i){
+									return getYPos(d.input,i);
+								}) //this will change when the different axes are needed.
 								.style("fill", function(d, i){
-									return getColor(i);
+									return getColor(d,i);
 								})
 								.attr("r", 0)
 								.on('mouseover', function (d) {
@@ -421,7 +466,10 @@ commitVizModule.directive('timelineD3', [
 									scope.$apply();
 								})
 								.transition()
-									.duration(1000)
+									.duration(function(d,i){
+										console.log("in transition: ", d);
+										return 1000 + (i*250);
+									})
 									.ease('cubic-in-out')
 									.attr("r", function(d) {
 										return d.weight;
@@ -435,8 +483,7 @@ commitVizModule.directive('timelineD3', [
 
 				//******Helper functions
 
-				var _tickHeights = [];
-
+				var _tickHeights = {};
 				/**
 				* Assign the heights for each input in the data series.
 				* Value assigns the _tickheights var for use in getYPos.
@@ -446,22 +493,13 @@ commitVizModule.directive('timelineD3', [
 					var temp = {};
 					var totalTicks = testData.series.length;
 					console.log(totalTicks);
-					var series = testData.series;
-					var totalHeight = height - 50; 
-					var spacing = totalHeight/totalTicks;
-					var array = []
-					var tempEntry = {};
+					var totalHeight = height - 50 -margin.bottom; //25 buffer from top & bottom
+					var spacing = totalHeight/(totalTicks-1);
 
 					for(var i=0; i<totalTicks; i+=1){
-						var space = (spacing * i)+(25+margin.top);
-						var key = series[i].toString();
-						console.log(key);
-						array.push(space);
-						tempEntry = {key: space};
-						console.log(tempEntry);
+						temp[testData.series[i]] = (spacing * i)+(25+margin.top);
 					}
 					//assign
-					console.log(array);
 					_tickHeights = temp;
 				}
 
@@ -484,14 +522,16 @@ commitVizModule.directive('timelineD3', [
       				//what its input it is so that the proper
       				/ height will be so that it lies on the correct axis
       				*/
+      				return _tickHeights[d];
       			}
 
     			/**
 			    * Takes index and returns a color value
 			    * @return {[type]} [description]
 			    */
-    			function getColor(i){
-    				return colorCycle(i);
+    			function getColor(d,i){
+    				var index = _.indexOf(testData.sources, d.source);
+    				return colorCycle(index);
     			}
 
     			/**
@@ -530,6 +570,7 @@ commitVizModule.directive('timelineD3', [
 			          top: event.pageY - 30
 			        });
 			      }
+
 				})();
 			}
 		};
